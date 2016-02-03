@@ -7,3 +7,7 @@ Nothing else needs to be done in order to ensure this privilege gets preserved a
 ## Exercises 2 & 3 & 4
 
 Exercises were pretty straightforward, code is done.
+
+# Exercises 5 & 6
+
+I had some trouble with the big file test in `testfile`. I was not setting the indirect block number in `file_block_walk()` after allocating it. I was also treating the `f_indirect` field as a pointer to the block as opposed to the block number. It turns out that other part of the source rely on `f_indirect` being a block number and not a pointer. This mean that whenever I want to find an indirect block, I have to transform `f_indirect` into the in memory address, cast it to a pointer and then dereference it as an array.

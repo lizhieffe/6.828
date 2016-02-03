@@ -149,7 +149,7 @@ file_block_walk(struct File *f, uint32_t filebno, uint32_t **ppdiskbno, bool all
 	else if (filebno < (NDIRECT + NINDIRECT)) {
 		// Indirect block
 		if (f->f_indirect) {
-			*ppdiskbno = &(((uint32_t *) f->f_indirect)[filebno - NDIRECT]);
+			*ppdiskbno = &((uint32_t *) diskaddr(f->f_indirect))[filebno - NDIRECT];
 
 		// Allocate new indirect block
 		} else if (alloc && !f->f_indirect) {
@@ -157,7 +157,8 @@ file_block_walk(struct File *f, uint32_t filebno, uint32_t **ppdiskbno, bool all
 			if (!new_blockno)
 				return -E_NO_DISK;
 			memset(diskaddr(new_blockno), 0, BLKSIZE);
-			*ppdiskbno = &(((uint32_t *) f->f_indirect)[filebno - NDIRECT]);
+			f->f_indirect = new_blockno;
+			*ppdiskbno = &((uint32_t *) diskaddr(f->f_indirect))[filebno - NDIRECT];
 
 		// No indirect block and we can't allocate one
 		} else if (!alloc && !f->f_indirect)
