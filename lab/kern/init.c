@@ -68,6 +68,7 @@ i386_init(void)
 	// ENV_CREATE(user_yield, ENV_TYPE_USER, ENV_MED_PRIORITY);
 	// ENV_CREATE(user_yield, ENV_TYPE_USER, ENV_LOW_PRIORITY);
 	// ENV_CREATE(user_icode, ENV_TYPE_USER, ENV_MED_PRIORITY);
+	ENV_CREATE(user_spawnhello, ENV_TYPE_USER, ENV_MED_PRIORITY);
 #endif // TEST*
 
 	// Should not be necessary - drains keyboard because interrupt has given up.
