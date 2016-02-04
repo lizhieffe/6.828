@@ -93,7 +93,7 @@ duppage(envid_t envid, unsigned pn)
 			panic("sys_page_map: %e\n", r);
 
 	} else { // map pages that are present but not writable or COW with their original permissions
-		if ((r = sys_page_map(this_envid, (void *) (pn*PGSIZE), envid, (void *) (pn*PGSIZE), uvpt[pn] & 0xFFF)) < 0)
+		if ((r = sys_page_map(this_envid, (void *) (pn*PGSIZE), envid, (void *) (pn*PGSIZE), uvpt[pn] & PTE_SYSCALL)) < 0)
 			panic("sys_page_map: %e\n", r);
 	}
 
