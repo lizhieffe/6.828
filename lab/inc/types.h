@@ -5,6 +5,8 @@
 #define NULL ((void*) 0)
 #endif
 
+#define INT_MAX 32767
+
 // Represents true-or-false values
 typedef _Bool bool;
 enum { false, true };

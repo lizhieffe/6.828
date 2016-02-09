@@ -75,6 +75,7 @@ struct Env {
 	int env_ipc_perm;		// Perm of page mapping received
 
 	enum EnvPriority priority;  // Envs with higher priority get run first
+	int env_retcode;
 };
 
 #endif // !JOS_INC_ENV_H

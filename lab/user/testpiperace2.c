@@ -28,7 +28,7 @@ umain(int argc, char **argv)
 			close(10);
 			sys_yield();
 		}
-		exit();
+		exit(0);
 	}
 
 	// We hold both p[0] and p[1] open, so pipeisclosed should
@@ -56,8 +56,8 @@ umain(int argc, char **argv)
 	while (kid->env_status == ENV_RUNNABLE)
 		if (pipeisclosed(p[0]) != 0) {
 			cprintf("\nRACE: pipe appears closed\n");
-			sys_env_destroy(r);
-			exit();
+			sys_env_destroy(r, 0);
+			exit(0);
 		}
 	cprintf("child done with loop\n");
 	if (pipeisclosed(p[0]))

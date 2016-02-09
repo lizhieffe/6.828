@@ -138,7 +138,7 @@ spawn(const char *prog, const char **argv)
 	return child;
 
 error:
-	sys_env_destroy(child);
+	sys_env_destroy(child, r);
 	close(fd);
 	return r;
 }

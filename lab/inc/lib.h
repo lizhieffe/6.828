@@ -33,7 +33,7 @@ extern const volatile struct Env envs[NENV];
 extern const volatile struct PageInfo pages[];
 
 // exit.c
-void	exit(void);
+void	exit(int retcode);
 
 // pgfault.c
 void	set_pgfault_handler(void (*handler)(struct UTrapframe *utf));
@@ -45,7 +45,7 @@ char*	readline(const char *buf);
 void	sys_cputs(const char *string, size_t len);
 int	sys_cgetc(void);
 envid_t	sys_getenvid(void);
-int	sys_env_destroy(envid_t);
+int	sys_env_destroy(envid_t, int);
 void	sys_yield(void);
 static envid_t sys_exofork(void);
 int	sys_env_set_status(envid_t env, int status);
@@ -117,7 +117,7 @@ int	pipe(int pipefds[2]);
 int	pipeisclosed(int pipefd);
 
 // wait.c
-void	wait(envid_t env);
+int	wait(envid_t env);
 
 /* File open modes */
 #define	O_RDONLY	0x0000		/* open for reading only */

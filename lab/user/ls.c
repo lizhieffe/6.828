@@ -60,7 +60,7 @@ void
 usage(void)
 {
 	printf("usage: ls [-dFl] [file...]\n");
-	exit();
+	exit(0);
 }
 
 void

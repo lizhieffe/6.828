@@ -50,9 +50,9 @@ sys_cgetc(void)
 }
 
 int
-sys_env_destroy(envid_t envid)
+sys_env_destroy(envid_t envid, int retcode)
 {
-	return syscall(SYS_env_destroy, 1, envid, 0, 0, 0, 0);
+	return syscall(SYS_env_destroy, 1, envid, retcode, 0, 0, 0);
 }
 
 envid_t

@@ -26,7 +26,7 @@ umain(int argc, char **argv)
 		cprintf("read in child succeeded\n");
 		seek(fd, 0);
 		close(fd);
-		exit();
+		exit(0);
 	}
 	wait(r);
 	if ((n2 = readn(fd, buf2, sizeof buf2)) != n)

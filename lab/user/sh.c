@@ -3,6 +3,10 @@
 #define BUFSIZ 1024		/* Find the buffer overrun bug! */
 int debug = 0;
 
+// Very similar to wait(envid) in wait.c, except that every time we
+// yield the CPU we check if the user sent in a ctl-c (character code 3).
+// If that's the case then we destroy the child process.
+void custom_wait(envid_t envid);
 
 // gettoken(s, 0) prepares gettoken for subsequent calls and returns 0.
 // gettoken(0, token) parses a shell token from the previously set string,
@@ -35,7 +39,7 @@ again:
 		case 'w':	// Add an argument
 			if (argc == MAXARGS) {
 				cprintf("too many arguments\n");
-				exit();
+				exit(-1);
 			}
 			argv[argc++] = t;
 			break;
@@ -44,7 +48,7 @@ again:
 			// Grab the filename from the argument list
 			if (gettoken(0, &t) != 'w') {
 				cprintf("syntax error: < not followed by word\n");
-				exit();
+				exit(-1);
 			}
 			// Open 't' for reading as file descriptor 0
 			// (which environments use as standard input).
@@ -57,7 +61,7 @@ again:
 			// LAB 5: Your code here.
 			if ((fd = open(t, O_RDONLY)) < 0) {
 				cprintf("open %s for reading: %e", t, fd);
-				exit();
+				exit(-1);
 			}
 			if (fd != 1) {
 				dup(fd, 0);
@@ -69,11 +73,11 @@ again:
 			// Grab the filename from the argument list
 			if (gettoken(0, &t) != 'w') {
 				cprintf("syntax error: > not followed by word\n");
-				exit();
+				exit(-1);
 			}
 			if ((fd = open(t, O_WRONLY|O_CREAT|O_TRUNC)) < 0) {
 				cprintf("open %s for write: %e", t, fd);
-				exit();
+				exit(-1);
 			}
 			if (fd != 1) {
 				dup(fd, 1);
@@ -84,13 +88,13 @@ again:
 		case '|':	// Pipe
 			if ((r = pipe(p)) < 0) {
 				cprintf("pipe: %e", r);
-				exit();
+				exit(-1);
 			}
 			if (debug)
 				cprintf("PIPE: %d %d\n", p[0], p[1]);
 			if ((r = fork()) < 0) {
 				cprintf("fork: %e", r);
-				exit();
+				exit(-1);
 			}
 			if (r == 0) {
 				if (p[0] != 0) {
@@ -159,7 +163,7 @@ runit:
 	if (r >= 0) {
 		if (debug)
 			cprintf("[%08x] WAIT %s %08x\n", thisenv->env_id, argv[0], r);
-		wait(r);
+		custom_wait(r);
 		if (debug)
 			cprintf("[%08x] wait finished\n", thisenv->env_id);
 	}
@@ -175,9 +179,26 @@ runit:
 	}
 
 	// Done!
-	exit();
+	exit(0);
 }
 
+void
+custom_wait(envid_t envid)
+{
+	const volatile struct Env *e;
+	int c;
+
+	assert(envid != 0);
+	e = &envs[ENVX(envid)];
+	while (e->env_id == envid && e->env_status != ENV_FREE) {
+		c = sys_cgetc();
+		if (c == 3) {
+			sys_env_destroy(envid, -2);
+			return;
+		}
+		sys_yield();
+	}
+}
 
 // Get the next token from string s.
 // Set *p1 to the beginning of the token and *p2 just past the token.
@@ -260,7 +281,7 @@ void
 usage(void)
 {
 	cprintf("usage: sh [-dix] [command-file]\n");
-	exit();
+	exit(0);
 }
 
 void
@@ -268,7 +289,6 @@ umain(int argc, char **argv)
 {
 	int r, interactive, echocmds;
 	struct Argstate args;
-
 	interactive = '?';
 	echocmds = 0;
 	argstart(&argc, argv, &args);
@@ -305,8 +325,10 @@ umain(int argc, char **argv)
 		if (buf == NULL) {
 			if (debug)
 				cprintf("EXITING\n");
-			exit();	// end of file
+			exit(-1);	// end of file
 		}
+		if (buf[0] == 3) // ctl-c, exit shell with retcode -2
+			exit(-2);
 		if (debug)
 			cprintf("LINE: %s\n", buf);
 		if (buf[0] == '#')
@@ -321,7 +343,7 @@ umain(int argc, char **argv)
 			cprintf("FORK: %d\n", r);
 		if (r == 0) {
 			runcmd(buf);
-			exit();
+			exit(0);
 		} else
 			wait(r);
 	}

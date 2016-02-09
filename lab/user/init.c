@@ -22,7 +22,7 @@ sum(const char *s, int n)
 void
 umain(int argc, char **argv)
 {
-	int i, r, x, want;
+	int i, r, x, want, child;
 	char args[256];
 
 	cprintf("init: running\n");
@@ -59,11 +59,13 @@ umain(int argc, char **argv)
 		panic("dup: %e", r);
 	while (1) {
 		cprintf("init: starting sh\n");
-		r = spawnl("/sh", "sh", (char*)0);
-		if (r < 0) {
+		child = spawnl("/sh", "sh", (char*)0);
+		if (child < 0) {
 			cprintf("init: spawn sh: %e\n", r);
 			continue;
 		}
-		wait(r);
+		r = wait(child);
+		if (r == -2) // return from shell, on ctl-c, exit
+			exit(0);
 	}
 }

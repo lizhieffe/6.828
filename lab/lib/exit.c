@@ -2,9 +2,9 @@
 #include <inc/lib.h>
 
 void
-exit(void)
+exit(int retcode)
 {
 	close_all();
-	sys_env_destroy(0);
+	sys_env_destroy(0, retcode);
 }
 

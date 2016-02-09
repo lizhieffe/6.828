@@ -22,7 +22,7 @@ endif
 LABSETUP ?= ./
 
 TOP = .
-QEMU = /home/anton/workspace/qemu/build/bin/qemu-system-i386
+QEMU = /home/someone/workspace/qemu/build/bin/qemu-system-i386
 
 # Cross-compiler jos toolchain
 #
@@ -141,8 +141,7 @@ include lib/Makefrag
 include user/Makefrag
 include fs/Makefrag
 
-
-CPUS ?= 1
+CPUS = 1
 
 QEMUOPTS = -hda $(OBJDIR)/kern/kernel.img -serial mon:stdio -gdb tcp::$(GDBPORT)
 QEMUOPTS += $(shell if $(QEMU) -nographic -help | grep -q '^-D '; then echo '-D qemu.log'; fi)

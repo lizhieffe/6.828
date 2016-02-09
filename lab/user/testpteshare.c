@@ -23,7 +23,7 @@ umain(int argc, char **argv)
 		panic("fork: %e", r);
 	if (r == 0) {
 		strcpy(VA, msg);
-		exit();
+		exit(0);
 	}
 	wait(r);
 	cprintf("fork handles PTE_SHARE %s\n", strcmp(VA, msg) == 0 ? "right" : "wrong");
@@ -41,5 +41,5 @@ void
 childofspawn(void)
 {
 	strcpy(VA, msg2);
-	exit();
+	exit(0);
 }

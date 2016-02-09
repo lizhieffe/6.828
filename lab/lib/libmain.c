@@ -23,6 +23,6 @@ libmain(int argc, char **argv)
 	umain(argc, argv);
 
 	// exit gracefully
-	exit();
+	exit(0);
 }
 

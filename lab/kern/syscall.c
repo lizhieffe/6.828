@@ -49,13 +49,15 @@ sys_getenvid(void)
 //	-E_BAD_ENV if environment envid doesn't currently exist,
 //		or the caller doesn't have permission to change envid.
 static int
-sys_env_destroy(envid_t envid)
+sys_env_destroy(envid_t envid, int retcode)
 {
 	int r;
 	struct Env *e;
 
 	if ((r = envid2env(envid, &e, 1)) < 0)
 		return r;
+
+	e->env_retcode = retcode;
 	env_destroy(e);
 	return 0;
 }
@@ -458,7 +460,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		case (SYS_getenvid):
 			return sys_getenvid();
 		case (SYS_env_destroy):
-			return sys_env_destroy(a1);
+			return sys_env_destroy(a1, a2);
 		case (SYS_yield):
 			sys_yield();
 			return 0;
