@@ -182,7 +182,7 @@ file_block_walk(struct File *f, uint32_t filebno, uint32_t **ppdiskbno, bool all
 int
 file_get_block(struct File *f, uint32_t filebno, char **blk)
 {
-       // LAB 5: Your code here.
+    // LAB 5: Your code here.
 	int r;
 	uint32_t *pblockno;
 
