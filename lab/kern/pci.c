@@ -15,6 +15,7 @@ static uint32_t pci_conf1_data_ioport = 0x0cfc;
 
 // Forward declarations
 static int pci_bridge_attach(struct pci_func *pcif);
+static int pci_network_attach(struct pci_func *pcif);
 
 // PCI driver table
 struct pci_driver {
@@ -31,6 +32,7 @@ struct pci_driver pci_attach_class[] = {
 // pci_attach_vendor matches the vendor ID and device ID of a PCI device. key1
 // and key2 should be the vendor ID and device ID respectively
 struct pci_driver pci_attach_vendor[] = {
+	{ PCI_VENDOR_NETWORK, PCI_PRODUCT_NETWORK, &pci_network_attach },
 	{ 0, 0, 0 },
 };
 
@@ -157,6 +159,13 @@ pci_scan_bus(struct pci_bus *bus)
 	}
 
 	return totaldev;
+}
+
+static int
+pci_network_attach(struct pci_func *pcif)
+{
+	pci_func_enable(pcif);
+	return 1;
 }
 
 static int
