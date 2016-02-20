@@ -243,10 +243,6 @@ trap_dispatch(struct Trapframe *tf)
 		return;
 	}
 
-	// Handle clock interrupts. Don't forget to acknowledge the
-	// interrupt using lapic_eoi() before calling the scheduler!
-	// LAB 4: Your code here.
-
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
 	switch(tf->tf_trapno) {
@@ -271,8 +267,16 @@ trap_dispatch(struct Trapframe *tf)
 				tf->tf_regs.reg_esi);
 			tf->tf_regs.reg_eax = ret_code;
 			break;
+		// Handle clock interrupts. Don't forget to acknowledge the
+		// interrupt using lapic_eoi() before calling the scheduler!
+		// LAB 4: Your code here.
+		// Add time tick increment to clock interrupts.
+		// Be careful! In multiprocessors, clock interrupts are
+		// triggered on every CPU.
+		// LAB 6: Your code here.
 		case (IRQ_OFFSET + IRQ_TIMER):
 			lapic_eoi();
+			time_tick(cpunum());
 			sched_yield();
 			break;
         // Handle keyboard and serial interrupts.
@@ -283,10 +287,6 @@ trap_dispatch(struct Trapframe *tf)
 		case (IRQ_OFFSET + IRQ_SERIAL):
 			serial_intr();
 			break;
-        // Add time tick increment to clock interrupts.
-        // Be careful! In multiprocessors, clock interrupts are
-        // triggered on every CPU.
-        // LAB 6: Your code here.
 		default:
 			// Unexpected trap: The user process or the kernel has a bug.
 			print_trapframe(tf);
