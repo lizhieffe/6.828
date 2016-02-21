@@ -4,6 +4,7 @@
 #include <kern/pci.h>
 #include <kern/pcireg.h>
 #include <kern/e1000.h>
+#include <kern/pmap.h>
 
 // Flag to do "lspci" at bootup
 static int pci_show_devs = 1;
@@ -164,7 +165,13 @@ pci_scan_bus(struct pci_bus *bus)
 static int
 pci_network_attach(struct pci_func *pcif)
 {
+	volatile uint32_t *network_regs;
+
 	pci_func_enable(pcif);
+	network_regs = mmio_map_region((physaddr_t) pcif->reg_base[0], pcif->reg_size[0]);
+
+	cprintf("status register value: %08x\n", network_regs[E1000_STATUS]);
+
 	return 1;
 }
 
