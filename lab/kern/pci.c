@@ -16,7 +16,6 @@ static uint32_t pci_conf1_data_ioport = 0x0cfc;
 
 // Forward declarations
 static int pci_bridge_attach(struct pci_func *pcif);
-static int pci_network_attach(struct pci_func *pcif);
 
 // PCI driver table
 struct pci_driver {
@@ -160,19 +159,6 @@ pci_scan_bus(struct pci_bus *bus)
 	}
 
 	return totaldev;
-}
-
-static int
-pci_network_attach(struct pci_func *pcif)
-{
-	volatile uint32_t *network_regs;
-
-	pci_func_enable(pcif);
-	network_regs = mmio_map_region((physaddr_t) pcif->reg_base[0], pcif->reg_size[0]);
-
-	cprintf("status register value: %08x\n", network_regs[E1000_STATUS]);
-
-	return 1;
 }
 
 static int

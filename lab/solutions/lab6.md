@@ -11,3 +11,7 @@ Read/skimmed the relevant chapters of the Intel manual. Added the network vendor
 ## Exercise 4
 
 Mapped the register base memory in `MMIOBASE` -- `MMIOLIM` range and added a couple of register offsets to `e1000.h`. I used the same trick as in `lapic.c`, of dividing the offset by 4 so it can be used as an index in the register array.
+
+## Exercise 5
+
+I decided to statically allocated memory for the transmission queue and the packet buffers. I also moved the `pic_network_attach()` function over to the `e1000.c` file because it started growing and became became very E1000 specific.
