@@ -16,6 +16,7 @@
 #include <kern/spinlock.h>
 #include <kern/time.h>
 #include <kern/pci.h>
+#include <kern/e1000.h>
 
 static void boot_aps(void);
 
@@ -56,6 +57,9 @@ i386_init(void)
 	// Acquire the big kernel lock before waking up APs
 	// Your code here:
 	lock_kernel();
+
+	e1000_transmit("humpty dumpty sat on a wall", 28);
+	e1000_transmit("humpty dumpty had a great fall", 31);
 
 	// Starting non-boot CPUs
 	boot_aps();

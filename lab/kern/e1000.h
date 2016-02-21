@@ -1,9 +1,7 @@
 #ifndef JOS_KERN_E1000_H
 #define JOS_KERN_E1000_H
 
-#include <kern/pmap.h>
 #include <kern/pci.h>
-
 #include <inc/types.h>
 
 #define PCI_VENDOR_NETWORK 0x8086
@@ -14,6 +12,8 @@
 #define PKT_BUF_SIZE 2048
 
 int pci_network_attach(struct pci_func *pcif);
+int e1000_transmit(char *pkt, size_t length);
+
 
 // Transmit descriptor struct. This is the type of each element in the
 // transmit queue.
@@ -60,7 +60,7 @@ struct packet
 #define E1000_TCTL     (0x00400/4)  /* TX Control - RW */
 #define E1000_TIPG     (0x00410/4)  /* TX Inter-packet gap -RW */
 
-// Transmission control bits (TCTL)
+// Transmission control register bits (TCTL)
 #define E1000_TCTL_EN     0x00000002    /* enable tx */
 #define E1000_TCTL_PSP    0x00000008    /* pad short packets */
 #define E1000_TCTL_CT     0x00000100    /* collision threshold, set to 0x10 */
@@ -70,5 +70,11 @@ struct packet
 #define E1000_TIPG_IPGT 0
 #define E1000_TIPG_IPGR1 10
 #define E1000_TIPG_IPGR2 20
+
+// Transmission descriptor bits
+#define E1000_TXD_DEXT	0x00100000 /* bit 5 in CMD section */
+#define E1000_TXD_RS	0x00001000 /* bit 3 in CMD section */
+#define E1000_TXD_DD	0x00000001 /* bit 0 in STATUS section */
+#define E1000_TXD_EOP	0x00000001 /* bit 0 of CMD section */
 
 #endif	// JOS_KERN_E1000_H
