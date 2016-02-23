@@ -58,8 +58,8 @@ i386_init(void)
 	// Your code here:
 	lock_kernel();
 
-	e1000_transmit("humpty dumpty sat on a wall", 28);
-	e1000_transmit("humpty dumpty had a great fall", 31);
+	// e1000_transmit("humpty dumpty sat on a wall", 28);
+	// e1000_transmit("humpty dumpty had a great fall", 31);
 
 	// Starting non-boot CPUs
 	boot_aps();

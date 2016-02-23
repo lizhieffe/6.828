@@ -19,3 +19,9 @@ I decided to statically allocated memory for the transmission queue and the pack
 ## Exercise 6
 
 I added the `e1000_transmit()` function, which takes two arguments: a pointer to the packet data and the length of the packet data. It took me some debugging to figure out that it was the software's responsibility to implement the wrap-around of the tail pointer. I also didn't immediately think to set the end of packet bit but soon realized that the buffers allocated will fit the entire packet. The `e1000_transmit()` function returns -1 if the descriptor queue is full. I thought it would be better for the caller to decide on the strategy to use in case no packets could be transmitted. Implementing a strategy in the driver code would force callers into using that specific strategy, resulting in a less composable and extensible design.
+
+## Exercise 7 & 8
+
+The `output()` function loops forever, at each iteration accepting a new transmission request. If the `sys_e1000_transmit()` system call returns `-E_E1000_TXBUF_FULL`, the packet is dropped. The system call will attempt to transmit the packet 20 times before giving up. Note that after each such attempt, `sys_e1000_transmit()` will yield the CPU so the system is not blocked. I think it's a fair trade off to drop a packet after 20 retries as the upper level protocols should be able to handle it.
+
+While working on these two exercises I did run into a "fun" bug. I was bitwise OR-ing the command section of the transmission descriptor with the following hex literal `0x00001000`. The goal was to turn on the 3rd bit (indexed from 0). Except that even though `0x00001000` looks like binary, it's not, it's a hex literal. So `0x00001000` is 4096 in decimal and `1 0000 0000 0000` in binary. To fix this I bitwise OR-ed the register with the hex literal `0x8`, which is `1000` in binary and everything worked as expected.

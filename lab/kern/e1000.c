@@ -86,6 +86,7 @@ e1000_transmit(char* pkt, size_t length)
 	// Next descriptor is free if the DD bit is set in the STATUS section of
 	// the transmission descriptor.
 	if (txq[tail_idx].status & E1000_TXD_DD) {
+		// cprintf("transmissiong queue not full, adding packet\n");
 		memmove((void *) &tx_pkts[tail_idx], (void *) pkt, length);
 
 		// Turn off DD bit
@@ -99,8 +100,7 @@ e1000_transmit(char* pkt, size_t length)
 		txq[tail_idx].length = length;
 
 		// Increment tail index
-		tail_idx = (tail_idx + 1) % NTXDESC;
-		network_regs[E1000_TDT] = tail_idx;
+		network_regs[E1000_TDT] = (tail_idx + 1) % NTXDESC;
 
 		return 0;
 	} else {

@@ -122,3 +122,9 @@ sys_time_msec(void)
 {
 	return (unsigned int) syscall(SYS_time_msec, 0, 0, 0, 0, 0, 0);
 }
+
+int
+sys_e1000_transmit(envid_t envid, char *pkt, size_t length)
+{
+	return syscall(SYS_e1000_transmit, 0, envid, (uint32_t) pkt, length, 0, 0);
+}

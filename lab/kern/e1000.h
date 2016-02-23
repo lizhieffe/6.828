@@ -72,9 +72,9 @@ struct packet
 #define E1000_TIPG_IPGR2 20
 
 // Transmission descriptor bits
-#define E1000_TXD_DEXT	0x00100000 /* bit 5 in CMD section */
-#define E1000_TXD_RS	0x00001000 /* bit 3 in CMD section */
-#define E1000_TXD_DD	0x00000001 /* bit 0 in STATUS section */
-#define E1000_TXD_EOP	0x00000001 /* bit 0 of CMD section */
+#define E1000_TXD_DEXT	0x20 /* bit 5 in CMD section */
+#define E1000_TXD_RS	0x8 /* bit 3 in CMD section */
+#define E1000_TXD_DD	0x1 /* bit 0 in STATUS section */
+#define E1000_TXD_EOP	0x1 /* bit 0 of CMD section */
 
 #endif	// JOS_KERN_E1000_H
