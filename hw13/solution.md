@@ -1,5 +1,7 @@
 # Homework 13
 
+Paper read for homework assignment: [Exokernel: An Operating System Architecture for Application-Level Resource Management (1995)](https://pdos.csail.mit.edu/6.828/2014/readings/engler95exokernel.pdf).
+
 Question: In lab 4 you completed building the core of an exokernel-based operating system. In class you studied xv6, a monolithic operating systems. Both are intend to support the UNIX API, but their internal organizations are different. A good example is the virtual memory implementation: JOS implements many virtual-memory-related functions (such as fork) in its library operating system, while xv6 implements them in the kernel. Give an concrete example of what a user program could do in JOS that a user-level program on xv6 is unable to do and why it is useful.
 
 I really enjoyed the exokernel paper! Some of the design choices in the JOS labs make more sense now.
