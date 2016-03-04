@@ -8,6 +8,9 @@
 #define PCI_PRODUCT_NETWORK 0x100e
 
 #define NTXDESC 32
+#define NRXDESC 128
+
+#define NELEM_MTA 128
 
 #define PKT_BUF_SIZE 2048
 
@@ -29,7 +32,20 @@ struct tx_desc
 	uint16_t special;
 };
 
-// Transmit packet buffer
+// Receive descriptor struct. This is the type of each element in the
+// receive queue.
+// Note that sizeof(struct rx_desc) = 16 bytes.
+struct rx_desc
+{
+	uint64_t addr;
+	uint16_t length;
+	uint16_t pkt_checksum;
+	uint8_t status;
+	uint8_t errors;
+	uint16_t special;
+};
+
+// Packet buffer
 struct packet
 {
 	char buf[PKT_BUF_SIZE];
@@ -59,6 +75,15 @@ struct packet
 #define E1000_TDT      (0x03818/4)  /* TX Descripotr Tail - RW */
 #define E1000_TCTL     (0x00400/4)  /* TX Control - RW */
 #define E1000_TIPG     (0x00410/4)  /* TX Inter-packet gap -RW */
+#define E1000_RAL      (0x05400/4)  /* Receive Address Low 32 bits - RW Array */
+#define E1000_RAH      (0x05404/4)  /* Receive Address High 32 bits- RW Array */
+#define E1000_MTA      (0x05200/4)  /* Multicast Table Array - RW Array */
+#define E1000_RDBAL    (0x02800/4)  /* RX Descriptor Base Address Low - RW */
+#define E1000_RDBAH    (0x02804/4)  /* RX Descriptor Base Address High - RW */
+#define E1000_RDLEN    (0x02808/4)  /* RX Descriptor Length - RW */
+#define E1000_RDH      (0x02810/4)  /* RX Descriptor Head - RW */
+#define E1000_RDT      (0x02818/4)  /* RX Descriptor Tail - RW */
+#define E1000_RCTL     (0x00100/4)  /* RX Control - RW */
 
 // Transmission control register bits (TCTL)
 #define E1000_TCTL_EN     0x00000002    /* enable tx */
@@ -76,5 +101,17 @@ struct packet
 #define E1000_TXD_RS	0x8 /* bit 3 in CMD section */
 #define E1000_TXD_DD	0x1 /* bit 0 in STATUS section */
 #define E1000_TXD_EOP	0x1 /* bit 0 of CMD section */
+
+// Hardcoded MAC address
+#define E1000_MAC_LOW 	0x12005452
+#define E1000_MAC_HIGH	0x00005634
+#define E1000_RAH_AV	0x80000000
+
+// Receive control bits
+#define E1000_RCTL_EN           0x00000002 /* enable receiver */
+#define E1000_RCTL_LBM_NO       0xffffff3f /* no loopback mode, 6 & 7 bit set to 0 */
+#define E1000_RCTL_BSIZE_2048   0xfffcffff /* buffer size at 2048 by setting 16 and 17 bit to 0 */
+#define E1000_RCTL_SECRC        0x04000000 /* strip CRC by setting 26 bit to 1 */
+#define E1000_RCTL_LPE_NO       0xffffffdf /* disable long packet mode by sett If the E1000 receives a packet that is larger than the packet buffer in one receive descriptor, it will retrieve as many descriptors as necessary from the receive queue to store the entire contents of the packet. To indicate that this has happened, it will set the DD status bit on all of these descriptors, but only set the EOP status bit on the last of these descriptors. You can either deal with this possibility in your driver, or simply configure the card to not accept "long packets" (also known as jumbo frames) and make sure your receive buffers are large enough to store the largest possible standard Ethernet packet (1518 bytes). ing the 5th bit to 0 */
 
 #endif	// JOS_KERN_E1000_H
