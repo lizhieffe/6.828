@@ -29,10 +29,7 @@ output(envid_t ns_envid)
 			continue;
 		}
 
-		// Note that we are passing in the envid of the output environment and not
-		// the network server envid. That is because the IPC page is being mapped to
-		// an address within output's address space (nsipcbuf).
-		if (sys_e1000_transmit(sys_getenvid(), nsipcbuf.pkt.jp_data, nsipcbuf.pkt.jp_len) == -E_E1000_TXBUF_FULL)
+		if (sys_e1000_transmit(nsipcbuf.pkt.jp_data, nsipcbuf.pkt.jp_len) == -E_E1000_TXBUF_FULL)
 			cprintf("Dropping packet, after 20 tries cannot transmit");
 	}
 

@@ -458,18 +458,17 @@ sys_time_msec(void)
 // will yield the CPU and try later, much like the loop in ipc_send().
 // If after 20 tries the packet cannot be transmitted, return -E_E1000_TXBUF_FULL.
 //
-// Returns 0 on succes, -E_BAD_ENV if the envid doesn't exist and -E_E1000_TXBUF_FULL
-// if after 20 retries the packet still cannot be sent.
+// Returns 0 on succes or -E_E1000_TXBUF_FULL if after 20 retries the packet
+// still cannot be sent.
 //
 static int
-sys_e1000_transmit(envid_t envid, char *pkt, size_t length)
+sys_e1000_transmit(char *pkt, size_t length)
 {
-	struct Env *env;
-
-	if (envid2env(envid, &env, 0) != 0)
-		return -E_BAD_ENV;
-
-	user_mem_assert(env, pkt, length, PTE_W);
+	// Note that we are checking the permissions on pkt with respect to
+	// the output environment (curenv) and not with respect to the network
+	// server environment. That is because the IPC page is being mapped to
+	// an address within the output environment's address space (nsipcbuf).
+	user_mem_assert(curenv, pkt, length, PTE_W);
 
 	int num_tries = 20;
 	while((e1000_transmit(pkt, length) == -1) && (num_tries > 0)) {
@@ -539,7 +538,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		case (SYS_time_msec):
 			return sys_time_msec();
 		case (SYS_e1000_transmit):
-			return sys_e1000_transmit(a1, (char *) a2, a3);
+			return sys_e1000_transmit((char *) a1, a2);
 		case (SYS_e1000_receive):
 			return sys_e1000_receive((char *) a1, (size_t *) a2);
 	default:
