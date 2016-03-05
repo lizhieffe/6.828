@@ -61,6 +61,7 @@ int	sys_ipc_try_send(envid_t to_env, uint32_t value, void *pg, int perm);
 int	sys_ipc_recv(void *rcv_pg);
 unsigned int sys_time_msec(void);
 int sys_e1000_transmit(envid_t envid, char *pkt, size_t length);
+int sys_e1000_receive(char *pkt, size_t *length);
 
 // This must be inlined.  Exercise for reader: why?
 static __inline envid_t __attribute__((always_inline))

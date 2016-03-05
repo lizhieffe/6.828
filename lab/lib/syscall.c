@@ -128,3 +128,9 @@ sys_e1000_transmit(envid_t envid, char *pkt, size_t length)
 {
 	return syscall(SYS_e1000_transmit, 0, envid, (uint32_t) pkt, length, 0, 0);
 }
+
+int
+sys_e1000_receive(char *pkt, size_t *length)
+{
+	return syscall(SYS_e1000_receive, 0, (uint32_t) pkt, (uint32_t) length, 0, 0, 0);
+}

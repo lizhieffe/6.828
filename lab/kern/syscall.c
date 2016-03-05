@@ -453,7 +453,7 @@ sys_time_msec(void)
 	return time_msec(cpunum());
 }
 //
-// Transmit packet data pointed to by pkt to the e1000 network controller.
+// Transmit packet data pointed to by pkt to the E1000 network controller.
 // If the e1000 has no more space in the transmission buffer, sys_e1000_transmit
 // will yield the CPU and try later, much like the loop in ipc_send().
 // If after 20 tries the packet cannot be transmitted, return -E_E1000_TXBUF_FULL.
@@ -482,6 +482,20 @@ sys_e1000_transmit(envid_t envid, char *pkt, size_t length)
 
 	return 0;
 }
+
+//
+// Read packet data received by the E1000 network controller and copy it into pkt.
+// If the E1000 network controller hasn't received any packet data, wait
+// indefinitely, until awakened by an interrupt indicating that a packet was received.
+//
+// Returns 0 on succes.
+//
+static int
+sys_e1000_receive(char *pkt, size_t *length)
+{
+	return 0;
+}
+
 
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
@@ -526,6 +540,8 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 			return sys_time_msec();
 		case (SYS_e1000_transmit):
 			return sys_e1000_transmit(a1, (char *) a2, a3);
+		case (SYS_e1000_receive):
+			return sys_e1000_receive((char *) a1, (size_t *) a2);
 	default:
 		return -E_INVAL;
 	}
