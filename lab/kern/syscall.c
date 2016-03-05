@@ -492,6 +492,11 @@ sys_e1000_transmit(char *pkt, size_t length)
 static int
 sys_e1000_receive(char *pkt, size_t *length)
 {
+	user_mem_assert(curenv, pkt, PKT_BUF_SIZE, PTE_W);
+
+	while (e1000_receive(pkt, length) != 0)
+		sys_yield();
+
 	return 0;
 }
 

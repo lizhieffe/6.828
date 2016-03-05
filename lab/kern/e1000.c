@@ -112,6 +112,9 @@ pci_network_attach(struct pci_func *pcif)
 		rxq[i].addr = PADDR(&rx_pkts[i]); 	// set packet buffer addr
 	}
 
+	// Enable Receive Time Interrupt
+	network_regs[E1000_IMS] |= E1000_RXT0;
+
 	// Set various bits in the Receive Control Register (RCTL)
 	// - set loopback mode (RCTL.LPE) to 0 for normal operation
 	// - set receive buffer size (RCTL.BSIZE) to 2048 bytes
@@ -161,4 +164,34 @@ e1000_transmit(char* pkt, size_t length)
 	} else {
 		return -1;
 	}
+}
+
+// Receive packet by transferring the data from the controller to the
+// buffer pointed to by pkt and setting the length accordingly.
+//
+// Return 0 on success, -1 on an empty queue.
+int
+e1000_receive(char* pkt, size_t *length)
+{
+	size_t tail_idx = (network_regs[E1000_RDT] + 1) % NRXDESC;
+
+	// Check if next descriptor points to a valid packet, if not we can't
+	// advance the tail pointer so the receive buffer is full.
+	if ((rxq[tail_idx].status & E1000_RXD_STATUS_DD) == 0)
+		return -1;
+
+	if ((rxq[tail_idx].status & E1000_RXD_STATUS_EOP) == 0)
+		panic("e1000_receive: EOP flag not set, all packets should fit in one buffer\n");
+
+	*length = rxq[tail_idx].length;
+	memmove(pkt, &rx_pkts[tail_idx], *length);
+
+	// Disable DD and EOP bits in descriptor
+	rxq[tail_idx].status &= ~(E1000_RXD_STATUS_DD);
+	rxq[tail_idx].status &= ~(E1000_RXD_STATUS_EOP);
+
+	// Advance tail pointer
+	network_regs[E1000_RDT] = tail_idx;
+
+	return 0;
 }

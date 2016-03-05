@@ -16,7 +16,7 @@
 
 int pci_network_attach(struct pci_func *pcif);
 int e1000_transmit(char *pkt, size_t length);
-
+int e1000_receive(char* pkt, size_t *length);
 
 // Transmit descriptor struct. This is the type of each element in the
 // transmit queue.
@@ -84,6 +84,8 @@ struct packet
 #define E1000_RDH      (0x02810/4)  /* RX Descriptor Head - RW */
 #define E1000_RDT      (0x02818/4)  /* RX Descriptor Tail - RW */
 #define E1000_RCTL     (0x00100/4)  /* RX Control - RW */
+#define E1000_IMS      (0x000D0/4)  /* Interrupt Mask Set - RW */
+#define E1000_ICR      (0x000C0/4)  /* Interrupt Cause Read - R/clr */
 
 // Transmission control register bits (TCTL)
 #define E1000_TCTL_EN     0x00000002    /* enable tx */
@@ -113,5 +115,12 @@ struct packet
 #define E1000_RCTL_BSIZE_2048   0xfffcffff /* buffer size at 2048 by setting 16 and 17 bit to 0 */
 #define E1000_RCTL_SECRC        0x04000000 /* strip CRC by setting 26 bit to 1 */
 #define E1000_RCTL_LPE_NO       0xffffffdf /* disable long packet mode by sett If the E1000 receives a packet that is larger than the packet buffer in one receive descriptor, it will retrieve as many descriptors as necessary from the receive queue to store the entire contents of the packet. To indicate that this has happened, it will set the DD status bit on all of these descriptors, but only set the EOP status bit on the last of these descriptors. You can either deal with this possibility in your driver, or simply configure the card to not accept "long packets" (also known as jumbo frames) and make sure your receive buffers are large enough to store the largest possible standard Ethernet packet (1518 bytes). ing the 5th bit to 0 */
+
+// Receive descriptor status bits
+#define E1000_RXD_STATUS_DD		0x00000001
+#define E1000_RXD_STATUS_EOP	0x00000010
+
+// Receive Timer Interrupt mask
+#define E1000_RXT0	0x00000080 /* 7th bit */
 
 #endif	// JOS_KERN_E1000_H
