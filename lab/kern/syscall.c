@@ -487,17 +487,13 @@ sys_e1000_transmit(char *pkt, size_t length)
 // If the E1000 network controller hasn't received any packet data, wait
 // indefinitely, until awakened by an interrupt indicating that a packet was received.
 //
-// Returns 0 on succes.
+// Returns 0 on succes, -1 on an empty queue.
 //
 static int
 sys_e1000_receive(char *pkt, size_t *length)
 {
 	user_mem_assert(curenv, pkt, PKT_BUF_SIZE, PTE_W);
-
-	while (e1000_receive(pkt, length) != 0)
-		sys_yield();
-
-	return 0;
+	return e1000_receive(pkt, length);
 }
 
 

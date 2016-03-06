@@ -113,7 +113,7 @@ pci_network_attach(struct pci_func *pcif)
 	}
 
 	// Enable Receive Time Interrupt
-	network_regs[E1000_IMS] |= E1000_RXT0;
+	// network_regs[E1000_IMS] |= E1000_RXT0;
 
 	// Set various bits in the Receive Control Register (RCTL)
 	// - set loopback mode (RCTL.LPE) to 0 for normal operation

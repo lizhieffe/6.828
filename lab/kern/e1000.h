@@ -118,7 +118,7 @@ struct packet
 
 // Receive descriptor status bits
 #define E1000_RXD_STATUS_DD		0x00000001
-#define E1000_RXD_STATUS_EOP	0x00000010
+#define E1000_RXD_STATUS_EOP	0x00000002
 
 // Receive Timer Interrupt mask
 #define E1000_RXT0	0x00000080 /* 7th bit */
