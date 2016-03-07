@@ -487,13 +487,22 @@ sys_e1000_transmit(char *pkt, size_t length)
 // If the E1000 network controller hasn't received any packet data, wait
 // indefinitely, until awakened by an interrupt indicating that a packet was received.
 //
-// Returns 0 on succes, -1 on an empty queue.
+// Returns 0 on succes, -E_E1000_RXBUF_EMPTY on an empty queue.
 //
 static int
 sys_e1000_receive(char *pkt, size_t *length)
 {
 	user_mem_assert(curenv, pkt, PKT_BUF_SIZE, PTE_W);
-	return e1000_receive(pkt, length);
+	if (e1000_receive(pkt, length) == 0)
+		return 0;
+	else {
+		curenv->env_status = ENV_NOT_RUNNABLE;
+		curenv->env_e1000_waiting_rx = true;
+		curenv->env_tf.tf_regs.reg_eax = -E_E1000_RXBUF_EMPTY;
+		sys_yield();
+	}
+	// Should never get here
+	return 0;
 }
 
 

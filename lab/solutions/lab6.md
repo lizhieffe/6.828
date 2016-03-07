@@ -29,3 +29,19 @@ While working on these two exercises I did run into a "fun" bug. I was bitwise O
 ## Exercise 9 & 10
 
 I modeled the receive initialization code after the transmit initialization code. I statically allocate the receive packet buffers and receive descriptors. The receive descriptors are then set to point to the receive buffers. The remaining initialization is done by turning bits on/off using bitwise OR/AND. I chose packet buffers large enough to hold the biggest possible Ethernet packet (2048 byte buffers vs 1518 byte Ethernet packet) and disabled long packet mode. All in all initialization was straight forward except for the MAC byte ordering, that took me a couple of tries to get right.
+
+## Exercise 11 & 12
+
+Getting interrupts to work for the receive functionality was the hardest exercise I've had to complete for this class so far.
+
+I quickly figured out which E1000 registers control the receive interrupts and added `IRQ_E1000` (the E1000 IRQ line is 11) to the trap related files (`trap.c`, `trap.h` and `trapentry.S`). However, even after setting the right bit in the Interrupt Mask Set/Read Register, the interrupt wasn't getting generated. After hours of reading the manual and going over my code, since I don't have access to TAs/Piazza, I decided to look for a hint on Github and stumbled on this [repo](https://github.com/macfij/macfij_jos). To enable the interrupt I had to add it to the IRQ mask set in `irq_setmask_8259A()`. A hint in the lab assignment would have been very helpful!
+
+The next roadblock was not having any runnable environments. The `testinput` binary spawns two environments: `output` and `input`, each controlling transfer and reception to and from the E1000 controller, respectively. After spawning two children, `testinput` waits to receive IPC, which marks the environment as not runnable. `output` also marks itself as not runnable as it waits for IPC after submitting the ARP packet. The only remaining environment, `input`, also becomes not runnable as it waits for an interrupt signaling a new packet. To fix this, I changed the scheduler to run an environment waiting to receive a packet (by checking the `env_e1000_waiting_rx` env field), before dropping into the kernel monitor. The special casing doesn't make this solution very elegant so I'd love to hear of a better one.
+
+Finally, I had a bug in the `sys_e1000_transmit()` system call. Specifically, I forgot to set the return value to `-E_E1000_RXBUF_EMPTY` when yielding the CPU in the case the receive queue was empty. This meant that the system call would break out of the while loop in `input()`, continuously sending the same packet.
+
+### Question
+
+How did you structure your receive implementation? In particular, what do you do if the receive queue is empty and a user environment requests the next incoming packet?
+
+Instead of cycling the CPU waiting for the next packet to hit the E1000 controller, I enabled the Receiver Timer Interrupt, which gets triggered every time a new packet arrives. If the receive queue is empty, `e1000_receive()` returns `-E_E1000_RXBUF_EMPTY` causing `sys_e1000_transmit()` to indicate in its env structure that it is waiting on a packet and to yield the CPU. When the interrupt happens, the handler looks for an environment waiting on a packet, sets it to runnable and exits. `sys_e1000_transmit()` is called in a while loop because after it is marked runnable it returns with `-E_E1000_RXBUF_EMPTY` and the while loop forces another call to `sys_e1000_transmit()`. This time however, the call will succeed because we know there's a packet waiting.

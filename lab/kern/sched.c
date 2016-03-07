@@ -44,6 +44,13 @@ sched_yield(void)
 	if (curenv != NULL && curenv->env_status == ENV_RUNNING)
 		env_run(curenv);
 
+	for (i = 0; i < NENV; i++) {
+		if (envs[i].env_e1000_waiting_rx) {
+			envs[i].env_e1000_waiting_rx = false;
+			env_run(&envs[i]);
+		}
+	}
+
 	// sched_halt never returns
 	sched_halt();
 }

@@ -21,8 +21,8 @@ input(envid_t ns_envid)
 	char pkt[PKT_BUF_SIZE];
 
 	while (1) {
-		while (sys_e1000_receive(pkt, &length) != 0)
-			sys_yield();
+		while (sys_e1000_receive(pkt, &length) == -E_E1000_RXBUF_EMPTY)
+			;
 
 		int r;
 		if ((r = sys_page_alloc(0, &nsipcbuf, perm)) < 0)

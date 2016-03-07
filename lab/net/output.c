@@ -32,5 +32,4 @@ output(envid_t ns_envid)
 		if (sys_e1000_transmit(nsipcbuf.pkt.jp_data, nsipcbuf.pkt.jp_len) == -E_E1000_TXBUF_FULL)
 			cprintf("Dropping packet, after 20 tries cannot transmit");
 	}
-
 }

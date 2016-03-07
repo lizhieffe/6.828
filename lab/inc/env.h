@@ -77,6 +77,9 @@ struct Env {
 
 	enum EnvPriority priority;  // Envs with higher priority get run first
 	int env_retcode;
+
+	// Lab 6
+	bool env_e1000_waiting_rx;  // Waiting to receive packet from E1000 controller
 };
 
 #endif // !JOS_INC_ENV_H

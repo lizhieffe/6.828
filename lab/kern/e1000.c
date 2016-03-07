@@ -1,6 +1,11 @@
 #include <kern/e1000.h>
 #include <kern/pmap.h>
+#include <kern/picirq.h>
+#include <kern/cpu.h>
+#include <kern/env.h>
+
 #include <inc/string.h>
+#include <inc/error.h>
 
 // LAB 6: Your driver code here
 
@@ -113,7 +118,7 @@ pci_network_attach(struct pci_func *pcif)
 	}
 
 	// Enable Receive Time Interrupt
-	// network_regs[E1000_IMS] |= E1000_RXT0;
+	network_regs[E1000_IMS] |= E1000_RXT0;
 
 	// Set various bits in the Receive Control Register (RCTL)
 	// - set loopback mode (RCTL.LPE) to 0 for normal operation
@@ -169,7 +174,7 @@ e1000_transmit(char* pkt, size_t length)
 // Receive packet by transferring the data from the controller to the
 // buffer pointed to by pkt and setting the length accordingly.
 //
-// Return 0 on success, -1 on an empty queue.
+// Return 0 on success and -E_E1000_RXBUF_EMPTY on an empty descriptor queue.
 int
 e1000_receive(char* pkt, size_t *length)
 {
@@ -178,7 +183,7 @@ e1000_receive(char* pkt, size_t *length)
 	// Check if next descriptor points to a valid packet, if not we can't
 	// advance the tail pointer so the receive buffer is full.
 	if ((rxq[tail_idx].status & E1000_RXD_STATUS_DD) == 0)
-		return -1;
+		return -E_E1000_RXBUF_EMPTY;
 
 	if ((rxq[tail_idx].status & E1000_RXD_STATUS_EOP) == 0)
 		panic("e1000_receive: EOP flag not set, all packets should fit in one buffer\n");
@@ -194,4 +199,39 @@ e1000_receive(char* pkt, size_t *length)
 	network_regs[E1000_RDT] = tail_idx;
 
 	return 0;
+}
+
+void
+clear_e1000_interrupt(void)
+{
+	// As per the Intel manual, section 13.4.7, writing to a bit clears
+	// that bit, acknowledging the interrupt.
+	network_regs[E1000_ICR] |= E1000_RXT0;
+	lapic_eoi();
+	irq_eoi();
+}
+
+void
+e1000_trap_handler(void)
+{
+	struct Env *receiver = NULL;
+	int i;
+
+	// See if there's an environment waiting to receive a packet
+	for (i = 0; i < NENV; i++) {
+		if (envs[i].env_e1000_waiting_rx)
+			receiver = &envs[i];
+	}
+
+	// If no environment is waiting, quietly acknowledge the interrupt
+	if (!receiver) {
+		clear_e1000_interrupt();
+		return;
+	}
+	else {
+		receiver->env_status = ENV_RUNNABLE;
+		receiver->env_e1000_waiting_rx = false;
+		clear_e1000_interrupt();
+		return;
+	}
 }

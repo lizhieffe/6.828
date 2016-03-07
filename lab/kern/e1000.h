@@ -17,6 +17,7 @@
 int pci_network_attach(struct pci_func *pcif);
 int e1000_transmit(char *pkt, size_t length);
 int e1000_receive(char* pkt, size_t *length);
+void e1000_trap_handler(void);
 
 // Transmit descriptor struct. This is the type of each element in the
 // transmit queue.
