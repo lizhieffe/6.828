@@ -45,3 +45,11 @@ Finally, I had a bug in the `sys_e1000_transmit()` system call. Specifically, I 
 How did you structure your receive implementation? In particular, what do you do if the receive queue is empty and a user environment requests the next incoming packet?
 
 Instead of cycling the CPU waiting for the next packet to hit the E1000 controller, I enabled the Receiver Timer Interrupt, which gets triggered every time a new packet arrives. If the receive queue is empty, `e1000_receive()` returns `-E_E1000_RXBUF_EMPTY` causing `sys_e1000_transmit()` to indicate in its env structure that it is waiting on a packet and to yield the CPU. When the interrupt happens, the handler looks for an environment waiting on a packet, sets it to runnable and exits. `sys_e1000_transmit()` is called in a while loop because after it is marked runnable it returns with `-E_E1000_RXBUF_EMPTY` and the while loop forces another call to `sys_e1000_transmit()`. This time however, the call will succeed because we know there's a packet waiting.
+
+## Exercise 13
+
+The only tough part of this exercise was figuring out which FS related functions to call. Given that `httpd` is running as its own environment, the right level of abstraction is the API presented in `lib.h`.
+
+The web page has a sliding banner that says "Cheesy web page!".
+
+I was on track to finish to lab within a reasonable time frame but getting the interrupts working for receive threw everything off. In total I probably spent 40 hours on this lab.
