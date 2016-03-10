@@ -14,10 +14,13 @@
 
 #define PKT_BUF_SIZE 2048
 
+#define E1000_NUM_MAC_WORDS 3
+
 int pci_network_attach(struct pci_func *pcif);
 int e1000_transmit(char *pkt, size_t length);
-int e1000_receive(char* pkt, size_t *length);
+int e1000_receive(char *pkt, size_t *length);
 void e1000_trap_handler(void);
+void e1000_get_mac(uint8_t *mac_addr);
 
 // Transmit descriptor struct. This is the type of each element in the
 // transmit queue.
@@ -87,6 +90,13 @@ struct packet
 #define E1000_RCTL     (0x00100/4)  /* RX Control - RW */
 #define E1000_IMS      (0x000D0/4)  /* Interrupt Mask Set - RW */
 #define E1000_ICR      (0x000C0/4)  /* Interrupt Cause Read - R/clr */
+#define E1000_EERD     (0x00014/4)  /* EEPROM Read - RW */
+
+// EEPROM
+#define E1000_EERD_ADDR 8 /* num of bit shifts to get to addr section */
+#define E1000_EERD_DATA 16 /* num of bit shifts to get to data section */
+#define E1000_EERD_DONE 0x00000010 /* 4th bit */
+#define E1000_EERD_READ 0x00000001 /* 0th bit */
 
 // Transmission control register bits (TCTL)
 #define E1000_TCTL_EN     0x00000002    /* enable tx */
@@ -105,10 +115,9 @@ struct packet
 #define E1000_TXD_DD	0x1 /* bit 0 in STATUS section */
 #define E1000_TXD_EOP	0x1 /* bit 0 of CMD section */
 
-// Hardcoded MAC address
-#define E1000_MAC_LOW 	0x12005452
-#define E1000_MAC_HIGH	0x00005634
+// MAC address related constants
 #define E1000_RAH_AV	0x80000000
+#define E1000_NUM_MAC_WORDS 3
 
 // Receive control bits
 #define E1000_RCTL_EN           0x00000002 /* enable receiver */

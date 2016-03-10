@@ -53,3 +53,20 @@ The only tough part of this exercise was figuring out which FS related functions
 The web page has a sliding banner that says "Cheesy web page!".
 
 I was on track to finish to lab within a reasonable time frame but getting the interrupts working for receive threw everything off. In total I probably spent 40 hours on this lab.
+
+## Challenge
+
+For the challenge exercise, I chose to implement a system call that would read the MAC address from the EEPROM so that it would no longer have to be hardcoded.
+
+The relevant sections in the manual are 5.3.1, (Software Access to the EEPROM), 5.6 (EEPROM Address Map) and 13.4.4 (EEPROM Read Register). Note that you need to zero out the EEPROM read register in between reads, otherwise it will return the same data. Too bad the manual didn't mention this (or maybe it did but I missed it).
+
+To verify that the code works you can run `make MACADDR=BA:5E:BA:11:67:89 qemu`, with `MACADDR` set to whatever value you like, and as part of the console output QEMU will display the MAC address like so:
+
+```
+init: running sh
+init: starting sh
+ns: ba:5e:ba:11:67:89 bound to static IP 10.0.2.15
+NS: TCP/IP initialized.
+```
+
+Unfortunately, if you run `make grade` with a different MAC address, the `testinput` test will fail because it hard codes a MAC address in the ARP announcement packet. You can run `make run-http` and point your browser to `http://127.0.0.1:{port}/index.html`, where `{port}` is one of the ports from `make which-ports`, to verify that everything works end to end with a different MAC address.

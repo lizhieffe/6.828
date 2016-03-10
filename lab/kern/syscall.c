@@ -505,6 +505,15 @@ sys_e1000_receive(char *pkt, size_t *length)
 	return 0;
 }
 
+// Get the MAC address of the NIC as read from the EEPROM
+int
+sys_e1000_get_mac(uint8_t *mac_addr)
+{
+	// Make sure user controls address
+	user_mem_assert(curenv, mac_addr, 12, PTE_W);
+	e1000_get_mac(mac_addr);
+	return 0;
+}
 
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
@@ -551,6 +560,8 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 			return sys_e1000_transmit((char *) a1, a2);
 		case (SYS_e1000_receive):
 			return sys_e1000_receive((char *) a1, (size_t *) a2);
+		case (SYS_e1000_get_mac):
+			return sys_e1000_get_mac((uint8_t *) a1);
 	default:
 		return -E_INVAL;
 	}

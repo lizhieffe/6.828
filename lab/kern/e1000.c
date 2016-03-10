@@ -32,13 +32,19 @@ struct packet rx_pkts[NRXDESC];
 // Base address of memory mapped controller registers
 volatile uint32_t *network_regs;
 
+// Array containing MAC address
+uint16_t mac[E1000_NUM_MAC_WORDS];
+
+// Forward declaration
+void read_mac_from_eeprom(void);
+
 int
 pci_network_attach(struct pci_func *pcif)
 {
 	pci_func_enable(pcif);
 	network_regs = mmio_map_region((physaddr_t) pcif->reg_base[0], pcif->reg_size[0]);
 
-	cprintf("status register value: %08x\n", network_regs[E1000_STATUS]);
+	read_mac_from_eeprom();
 
 	// =======================================================================
 	// Transmit initialization
@@ -88,9 +94,15 @@ pci_network_attach(struct pci_func *pcif)
 	// =======================================================================
 	// Receive initialization
 
-	// Set MAC address in (RAH/RAL). Set valid bit in E1000_RAH.
-	network_regs[E1000_RAL] = E1000_MAC_LOW;
-	network_regs[E1000_RAH] = E1000_MAC_HIGH;
+	// Set MAC address in (RAH/RAL). The MAC address was read into the
+	// mac array by the read_mac_from_eeprom() function.
+	// Set valid bit in E1000_RAH.
+	network_regs[E1000_RAL] = 0x0;
+	network_regs[E1000_RAL] |= mac[0];
+	network_regs[E1000_RAL] |= (mac[1] << E1000_EERD_DATA);
+
+	network_regs[E1000_RAH] = 0x0;
+	network_regs[E1000_RAH] |= mac[2];
 	network_regs[E1000_RAH] |= E1000_RAH_AV;
 
 	// Initialize MTA to 0b
@@ -234,4 +246,38 @@ e1000_trap_handler(void)
 		clear_e1000_interrupt();
 		return;
 	}
+}
+
+// This method reads the MAC address 16 bits at a time from the EEPROM
+void
+read_mac_from_eeprom(void)
+{
+	uint8_t word_num;
+
+	for (word_num = 0; word_num < E1000_NUM_MAC_WORDS; word_num++) {
+
+		// Set address to read
+		network_regs[E1000_EERD] |= (word_num << E1000_EERD_ADDR);
+
+		// Tell controller to read
+		network_regs[E1000_EERD] |= E1000_EERD_READ;
+
+		// Spin until controller indicates it is down with the read
+		while (!(network_regs[E1000_EERD] & E1000_EERD_DONE))
+			;
+
+		// Read value into memory
+		mac[word_num] = network_regs[E1000_EERD] >> E1000_EERD_DATA;
+
+		// Register has to be cleared, otherwise it keeps reading the
+		// same value over and over
+		network_regs[E1000_EERD] = 0x0;
+	}
+}
+
+void
+e1000_get_mac(uint8_t *mac_addr)
+{
+	*((uint32_t *) mac_addr) =  (uint32_t) network_regs[E1000_RAL];
+	*((uint16_t*)(mac_addr + 4)) = (uint16_t) network_regs[E1000_RAH];
 }

@@ -134,3 +134,9 @@ sys_e1000_receive(char *pkt, size_t *length)
 {
 	return syscall(SYS_e1000_receive, 0, (uint32_t) pkt, (uint32_t) length, 0, 0, 0);
 }
+
+int
+sys_e1000_get_mac(uint8_t *mac_addr)
+{
+	return syscall(SYS_e1000_get_mac, 0, (uint32_t) mac_addr, 0, 0, 0, 0);
+}
